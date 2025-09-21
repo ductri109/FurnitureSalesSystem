@@ -1,0 +1,96 @@
+﻿@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+@model X.PagedList.IPagedList<FurnitureSalesSystem.Models.ViewModels.CategoryWithTotalQuantityViewModel>
+
+@{
+    ViewData["Title"] = "Danh mục";
+}
+
+<h1 class="text-2xl font-bold mb-4">Danh sách danh mục</h1>
+
+<p class="mb-4">
+    <a asp-action="Create" class="bg-brown-700 text-white px-4 py-2 rounded hover:bg-brown-900">Thêm danh mục</a>
+</p>
+
+<table class="table-auto w-full text-left border">
+    <thead class="bg-gray-100">
+        <tr>
+            <th class="px-4 py-2">Tên danh mục</th>
+            <th class="px-4 py-2">Tổng số lượng</th>
+            <th class="px-4 py-2">Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr class="border-t">
+                <td class="px-4 py-2">@item.Name</td>
+                <td class="px-4 py-2">@item.TotalProducts</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="text-600 hover:text-[var(--secondary)] mr-3"><i class="fas fa-eye"></i></a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Giao diện phân trang đẹp -->
+<div class="mt-8 flex justify-center">
+    <nav class="inline-flex rounded-md shadow bg-white">
+        <ul class="flex divide-x border border-gray-300 rounded-md overflow-hidden text-gray-700">
+            <li>
+                @if (Model.HasPreviousPage)
+                {
+                    <a href="@Url.Action("Index", new { page = Model.PageNumber - 1 })"
+                       class="px-4 py-2 hover:bg-gray-100">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                }
+                else
+                {
+                    <span class="px-4 py-2 text-gray-400 cursor-not-allowed">
+                        <i class="fas fa-chevron-left"></i>
+                    </span>
+                }
+            </li>
+
+            @for (int i = 1; i <= Model.PageCount; i++)
+            {
+                <li>
+                    @if (i == Model.PageNumber)
+                    {
+                        <span class="px-4 py-2 font-semibold text-[var(--primary-color)] bg-gray-100">
+                            @i
+                        </span>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Index", new { page = i })"
+                           class="px-4 py-2 hover:bg-gray-100">
+                            @i
+                        </a>
+                    }
+                </li>
+            }
+
+            <li>
+                @if (Model.HasNextPage)
+                {
+                    <a href="@Url.Action("Index", new { page = Model.PageNumber + 1 })"
+                       class="px-4 py-2 hover:bg-gray-100">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+                else
+                {
+                    <span class="px-4 py-2 text-gray-400 cursor-not-allowed">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
+                }
+            </li>
+        </ul>
+    </nav>
+</div>
+

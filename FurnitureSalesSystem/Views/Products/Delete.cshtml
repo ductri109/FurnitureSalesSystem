@@ -1,0 +1,20 @@
+﻿@model FurnitureSalesSystem.Models.Product
+
+@{
+    ViewData["Title"] = "Xoá sản phẩm";
+}
+
+<h1 class="text-2xl font-bold mb-4">Xác nhận xoá</h1>
+
+<div class="bg-white shadow-md rounded p-6 max-w-xl space-y-4">
+    <p>Bạn có chắc chắn muốn xoá sản phẩm <span class="font-semibold text-red-600">@Model.Name</span> không?</p>
+
+    <form asp-action="DeleteConfirmed">
+        <input type="hidden" asp-for="Id" />
+        <div class="flex space-x-2">
+            <input type="submit" value="Xoá" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" />
+            <a asp-action="Index" class="px-4 py-2 border rounded hover:bg-gray-100">Huỷ</a>
+        </div>
+    </form>
+</div>
+<a href="#"></a>        

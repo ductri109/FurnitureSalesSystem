@@ -1,0 +1,150 @@
+﻿@model FurnitureSalesSystem.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập - AmLive";
+    Layout = null; // Không dùng layout chung cho trang login
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #6D4C41;
+            --secondary-color: #8D6E63;
+            --accent-color: #A1887F;
+            --light-color: #F5F5F5;
+            --dark-color: #3E2723;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--light-color);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(109, 76, 65, 0.3);
+            outline: none;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+            .submit-btn:hover {
+                background-color: var(--dark-color);
+                transform: translateY(-2px);
+            }
+
+        .text-danger {
+            font-size: 0.875rem;
+            color: red;
+            margin-top: 0.25rem;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex">
+        <!-- Form Section -->
+        <div class="w-full md:w-1/2 flex items-center justify-center p-8">
+            <div class="w-full max-w-md">
+                <div class="flex items-center justify-center mb-8">
+                    <i class="fas fa-couch text-4xl text-[var(--primary-color)]"></i>
+                    <span class="ml-3 text-3xl font-bold text-[var(--dark-color)]">AmLive</span>
+                </div>
+
+                <div class="text-center mb-10">
+                    <h1 class="text-3xl font-bold text-[var(--dark-color)]">Chào mừng trở lại!</h1>
+                    <p class="text-gray-500 mt-2">Đăng nhập để tiếp tục quản lý cửa hàng của bạn.</p>
+                </div>
+
+                <!-- Razor Login Form -->
+                <form asp-action="Login" method="post">
+                    @Html.ValidationSummary(false, "", new { @class = "text-danger mb-4 text-sm" })
+                    <div class="space-y-6">
+                        <!-- Username -->
+                        <div>
+                            <label asp-for="Username" class="block text-sm font-medium text-gray-700">Tên đăng nhập</label>
+                            <div class="mt-1 relative">
+                                <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input asp-for="Username" class="form-input w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 transition" placeholder="Nhập tên đăng nhập" />
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div>
+                            <label asp-for="Password" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+                            <div class="mt-1 relative">
+                                <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input asp-for="Password" type="password" class="form-input w-full pl-12 pr-12 py-3 rounded-lg border border-gray-300 transition" placeholder="Nhập mật khẩu" />
+                                <button type="button" id="togglePassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[var(--primary-color)]">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Remember me -->
+                    <div class="flex items-center justify-between mt-6">
+                        <div class="flex items-center">
+                            <input asp-for="RememberMe" type="checkbox" class="h-4 w-4 text-[var(--primary-color)] focus:ring-[var(--primary-color)] border-gray-300 rounded">
+                            <label asp-for="RememberMe" class="ml-2 block text-sm text-gray-900">Ghi nhớ đăng nhập</label>
+                        </div>
+                        <div class="text-sm">
+                            <a href="#" class="font-medium text-[var(--primary-color)] hover:text-[var(--dark-color)]">Quên mật khẩu?</a>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="mt-8">
+                        <button type="submit" class="submit-btn w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-bold text-white">
+                            Đăng nhập
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Image Section -->
+        <div class="hidden md:block w-1/2 relative">
+            <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop"
+                 alt="Stylish furniture in a living room"
+                 class="absolute inset-0 w-full h-full object-cover">
+            <div class="absolute inset-0 bg-[var(--dark-color)] opacity-40"></div>
+            <div class="absolute inset-0 flex items-end justify-center p-12">
+                <div class="text-center text-white">
+                    <h2 class="text-4xl font-bold">Nâng tầm không gian sống</h2>
+                    <p class="mt-4 text-lg max-w-md mx-auto">Quản lý mọi khía cạnh của cửa hàng nội thất một cách hiệu quả và chuyên nghiệp.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('Password');
+            const icon = this.querySelector('i');
+            const isPassword = passwordInput.type === 'password';
+
+            passwordInput.type = isPassword ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !isPassword);
+            icon.classList.toggle('fa-eye-slash', isPassword);
+        });
+    </script>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+</body>
+</html>

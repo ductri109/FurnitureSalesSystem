@@ -1,0 +1,65 @@
+﻿@model FurnitureSalesSystem.Models.Order
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<h1 class="text-2xl font-semibold mb-4">Chi tiết đơn hàng #@Model.Id</h1>
+
+<div class="bg-white shadow rounded-lg p-6 space-y-4">
+    <div>
+        <p><strong>Khách hàng:</strong> @Model.Customer?.FullName</p>
+        <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Tổng tiền:</strong> @Model.TotalAmount.ToString("N0") ₫</p>
+        <p>
+            <strong>Trạng thái:</strong>
+            <span class="inline-block px-2 py-1 rounded text-white
+                         @(Model.Status == OrderStatus.Confirmed ? "bg-green-500" :
+                                             Model.Status == OrderStatus.Cancelled ? "bg-red-500" : "bg-yellow-500")">
+                @Model.Status
+            </span>
+        </p>
+    </div>
+
+    @* ✅ Thêm phần ghi chú *@
+    <div>
+        <p><strong>Ghi chú nội bộ:</strong></p>
+        <div class="bg-gray-50 p-3 rounded border border-gray-200 text-sm text-gray-800">
+            @(!string.IsNullOrWhiteSpace(Model.InternalNote) ? Model.InternalNote : "<Không có>")
+        </div>
+
+        <p class="mt-4"><strong>Ghi chú cho khách:</strong></p>
+        <div class="bg-gray-50 p-3 rounded border border-gray-200 text-sm text-gray-800">
+            @(!string.IsNullOrWhiteSpace(Model.CustomerNote) ? Model.CustomerNote : "<Không có>")
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <h2 class="text-lg font-semibold mb-2">Sản phẩm</h2>
+    <table class="w-full text-sm border">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="p-2 text-left">Tên</th>
+                <th class="p-2 text-right">Số lượng</th>
+                <th class="p-2 text-right">Đơn giá</th>
+                <th class="p-2 text-right">Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OrderDetails)
+            {
+                <tr class="border-t">
+                    <td class="p-2">@item.Product?.Name</td>
+                    <td class="p-2 text-right">@item.Quantity</td>
+                    <td class="p-2 text-right">@item.UnitPrice.ToString("N0") ₫</td>
+                    <td class="p-2 text-right">@((item.Quantity * item.UnitPrice).ToString("N0")) ₫</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="mt-6">
+        <a asp-action="Index" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Quay lại</a>
+    </div>
+</div>

@@ -1,0 +1,45 @@
+﻿@model X.PagedList.IPagedList<FurnitureSalesSystem.Models.Product>
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+
+@{
+    Layout = null;
+}
+<div class="mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6" id="product-list">
+        @foreach (var product in Model)
+        {
+            <div class="product-card bg-white rounded-lg shadow p-4 flex flex-col items-center text-center">
+                <img src="@product.Image"
+                     alt="@product.Name"
+                     class="w-full h-40 object-cover rounded mb-3" />
+
+                <h3 class="text-lg font-semibold">@product.Name</h3>
+                <p class="text-sm text-gray-600 mb-2">
+                    Giá: <strong>@product.Price.ToString("N0") ₫</strong>
+                </p>
+                <p class="text-sm text-gray-500 mb-2">
+                    Tồn kho: <strong>@product.Quantity</strong>
+                </p>
+                <button type="button"
+                        class="add-to-order bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded"
+                        data-id="@product.Id"
+                        data-name="@product.Name"
+                        data-price="@product.Price">
+                    <i class="fas fa-cart-plus mr-1"></i> Thêm
+                </button>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4 flex justify-end pr-4">
+        @Html.PagedListPager(Model, page => Url.Action("LoadProductsPartial", new { page }), new PagedListRenderOptions
+        {
+            UlElementClasses = new[] { "pagination", "flex", "space-x-1" }, // ⚠️ Thêm class "pagination"
+            LiElementClasses = new[] { "mx-1" },
+            PageClasses = new[] { "px-3", "py-1", "rounded", "border", "text-gray-600", "hover:bg-gray-100" },
+            ActiveLiElementClass = "bg-gray-200 font-semibold"
+            })
+    </div>
+</div>

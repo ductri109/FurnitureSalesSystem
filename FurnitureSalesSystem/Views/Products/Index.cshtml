@@ -1,0 +1,162 @@
+﻿@model X.PagedList.IPagedList<FurnitureSalesSystem.Models.Product>
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+
+@{
+    ViewData["Title"] = "Danh sách sản phẩm";
+    var categories = ViewBag.CategoryId as List<SelectListItem>;
+}
+
+@* Token để dùng chung *@
+<form id="tokenForm">@Html.AntiForgeryToken()</form>
+
+<h1 class="text-xl font-semibold text-gray-800 mb-4">@ViewData["Title"]</h1>
+
+<a asp-action="Create" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--secondary-color)] transition mb-4 inline-block">
+    <i class="fas fa-plus mr-1"></i> Thêm mới
+</a>
+<div class="mb-8 border border-gray-200 rounded shadow-sm">
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-gray-700">
+            <thead class ="bg-white border-b font-semibold">
+                <tr>
+                    <th class="text-left px-4 py-2">Ảnh</th>
+                    <th class="text-left px-4 py-2">Tên</th>    
+                    <th class="text-left px-4 py-2">Giá</th>
+                    <th class="text-left px-4 py-2">Số Lượng</th>
+                    <th class="text-left px-4 py-2">Danh mục</th>
+                    <th class="text-left px-4 py-2">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-2">
+                            @if (!string.IsNullOrEmpty(item.Image))
+                            {
+                                <img src="@item.Image" alt="Ảnh" class="w-16 h-16 object-cover rounded" />
+                            }
+                            else
+                            {
+                                <span class="text-gray-400 italic">Không có ảnh</span>
+                            }
+                        </td>
+                        <td class="px-4 py-2">@item.Name</td>
+                        <td class="px-4 py-2">@String.Format("{0:N0} ₫", item.Price)</td>
+                        <td class="px-4 py-2">@item.Quantity</td>
+                        <td class="px-4 py-2">@item.Category?.Name</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="text-[var(--primary)] hover:text-[var(--secondary)] mr-3"><i class="fas fa-eye"></i></a>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></a>
+                            <a href="javascript:void(0)" onclick="openDeleteProductModal(@item.Id, '@JavaScriptEncoder.Default.Encode(item.Name)')" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <!-- Giao diện phân trang đẹp -->
+        <div class="mt-8 flex justify-center">
+            <nav class="inline-flex rounded-md shadow bg-white">
+                <ul class="flex divide-x border border-gray-300 rounded-md overflow-hidden text-gray-700">
+                    <li>
+                        @if (Model.HasPreviousPage)
+                        {
+                            <a href="@Url.Action("Index", new { page = Model.PageNumber - 1 })"
+                               class="px-4 py-2 hover:bg-gray-100">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="px-4 py-2 text-gray-400 cursor-not-allowed">
+                                <i class="fas fa-chevron-left"></i>
+                            </span>
+                        }
+                    </li>
+
+                    @for (int i = 1; i <= Model.PageCount; i++)
+                    {
+                        <li>
+                            @if (i == Model.PageNumber)
+                            {
+                                <span class="px-4 py-2 font-semibold text-[var(--primary-color)] bg-gray-100">
+                                    @i
+                                </span>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Index", new { page = i })"
+                                   class="px-4 py-2 hover:bg-gray-100">
+                                    @i
+                                </a>
+                            }
+                        </li>
+                    }
+
+                    <li>
+                        @if (Model.HasNextPage)
+                        {
+                            <a href="@Url.Action("Index", new { page = Model.PageNumber + 1 })"
+                               class="px-4 py-2 hover:bg-gray-100">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="px-4 py-2 text-gray-400 cursor-not-allowed">
+                                <i class="fas fa-chevron-right"></i>
+                            </span>
+                        }
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Delete -->
+<div id="deleteProductModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-6 rounded shadow max-w-sm w-full">
+        <h2 class="text-lg font-bold mb-4">Xác nhận xoá sản phẩm</h2>
+        <p class="mb-4">Bạn có chắc chắn muốn xoá sản phẩm <span id="delete-product-name" class="font-semibold text-red-600"></span>?</p>
+        <div class="flex justify-end">
+            <button onclick="closeDeleteProductModal()" class="bg-gray-400 text-white px-4 py-2 rounded mr-2">Huỷ</button>
+            <button onclick="confirmDeleteProduct()" class="bg-red-600 text-white px-4 py-2 rounded">Xoá</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let deleteProductId = 0;
+
+        function openDeleteProductModal(id, name) {
+            deleteProductId = id;
+            document.getElementById("delete-product-name").innerText = name;
+            document.getElementById("deleteProductModal").classList.remove("hidden");
+        }
+
+        function closeDeleteProductModal() {
+            document.getElementById("deleteProductModal").classList.add("hidden");
+        }
+
+        async function confirmDeleteProduct() {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const res = await fetch(`/Products/Delete/${deleteProductId}`, {
+                method: "POST",
+                headers: { 'RequestVerificationToken': token }
+            });
+            if (res.ok) {
+                closeDeleteProductModal();
+                location.reload();
+            } else {
+                alert("Không thể xoá sản phẩm");
+            }
+        }
+    </script>
+}
+

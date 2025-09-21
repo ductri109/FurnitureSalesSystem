@@ -1,0 +1,136 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var stats = ViewBag.OrderStatusStats as List<dynamic>;
+}
+
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+
+    <!-- Tổng quan -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <!-- Tổng sản phẩm -->
+        <div class="bg-white rounded-lg shadow p-6 flex items-center">
+            <div class="p-3 rounded-full bg-yellow-100 text-yellow-600 mr-4">
+                <i class="fas fa-box-open text-xl"></i>
+            </div>
+            <div>
+                <p class="text-gray-500">Tổng sản phẩm</p>
+                <h3 class="text-2xl font-bold">@ViewBag.TotalProducts</h3>
+            </div>
+        </div>
+
+        <!-- Tổng đơn hàng -->
+        <div class="bg-white rounded-lg shadow p-6 flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                <i class="fas fa-shopping-cart text-xl"></i>
+            </div>
+            <div>
+                <p class="text-gray-500">Tổng đơn hàng</p>
+                <h3 class="text-2xl font-bold">@ViewBag.TotalOrders</h3>
+            </div>
+        </div>
+
+        <!-- Tổng doanh thu -->
+        <div class="bg-white rounded-lg shadow p-6 flex items-center">
+            <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                <i class="fas fa-dollar-sign text-xl"></i>
+            </div>
+            <div>
+                <p class="text-gray-500">Tổng doanh thu</p>
+                <h3 class="text-2xl font-bold">@String.Format("{0:N0}₫", ViewBag.TotalRevenue)</h3>
+            </div>
+        </div>
+
+        <!-- Tổng khách hàng -->
+        <div class="bg-white rounded-lg shadow p-6 flex items-center">
+            <div class="p-3 rounded-full bg-red-100 text-red-600 mr-4">
+                <i class="fas fa-users text-xl"></i>
+            </div>
+            <div>
+                <p class="text-gray-500">Tổng khách hàng</p>
+                <h3 class="text-2xl font-bold">@ViewBag.TotalCustomers</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Biểu đồ tròn trạng thái đơn hàng -->
+        <div class="bg-white rounded-lg shadow p-4 col-span-1">
+            <h2 class="text-2xl font-semibold mb-4">Biểu đồ trạng thái đơn hàng</h2>
+            <canvas id="orderStatusChart" height="200" style="width: 100%;"></canvas>
+        </div>
+
+        @section Scripts {
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                const ctx = document.getElementById('orderStatusChart').getContext('2d');
+                const orderStatusChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: @Html.Raw(Json.Serialize(ViewBag.OrderStatusLabels)),
+                        datasets: [{
+                            label: 'Số đơn hàng',
+                            data: @Html.Raw(Json.Serialize(ViewBag.OrderStatusCounts)),
+                            backgroundColor: [
+                                '#3B82F6', // xanh dương
+                                '#10B981', // xanh lá
+                                '#F59E0B', // vàng
+                                '#EF4444', // đỏ
+                                '#8B5CF6'  // tím
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        let value = context.parsed;
+                                        return `${label}: ${value} đơn`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+        }
+
+    <!-- 5 đơn hàng mới nhất -->
+        <div class="bg-white rounded-lg shadow p-4 col-span-2">
+            <h2 class="text-2xl font-semibold mb-4">Đơn hàng mới nhất</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-2">Mã đơn</th>
+                            <th class="px-4 py-2">Khách hàng</th>
+                            <th class="px-4 py-2">Ngày đặt</th>
+                            <th class="px-4 py-2">Trạng thái</th>
+                            <th class="px-4 py-2">Tổng tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in ViewBag.LatestOrders)
+                        {
+                            <tr class="border-t">
+                                <td class="px-4 py-2">@order.Id</td>
+                                <td class="px-4 py-2">@order.Customer?.FullName</td>
+                                <td class="px-4 py-2">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="px-4 py-2">@order.Status</td>
+                                <td class="px-4 py-2">@String.Format("{0:N0}₫", order.TotalAmount)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,130 @@
+﻿@model List<FurnitureSalesSystem.Models.ViewModels.UserViewModel>
+@{
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+}
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+
+<h2>Quản lý người dùng</h2>
+<div class="mb-4">
+    <form action="/Admin/Users/Create" method="get">
+        <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
+            + Tạo người dùng mới
+        </button>
+    </form>
+</div>
+@* Debug info *@
+<div class="mb-4 p-4 bg-gray-100 rounded">
+    <strong>Debug Info:</strong><br>
+    Model count: @Model.Count<br>
+    Current user: @User.Identity.Name<br>
+    Is authenticated: @User.Identity.IsAuthenticated<br>
+    Roles: @string.Join(", ", User.Claims.Where(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(c => c.Value))
+</div>
+
+@* Hiển thị thông báo *@
+@if (TempData["Success"] != null)
+{
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <strong>Thành công:</strong> @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <strong>Lỗi:</strong> @TempData["Error"]
+    </div>
+}
+
+<table class="table-auto w-full border-collapse border border-gray-300">
+    <thead>
+        <tr class="bg-gray-200">
+            <th class="border border-gray-300 px-4 py-2">Tên đăng nhập</th>
+            <th class="border border-gray-300 px-4 py-2">Email</th>
+            <th class="border border-gray-300 px-4 py-2">Vai trò</th>
+            <th class="border border-gray-300 px-4 py-2">Trạng thái</th>
+            <th class="border border-gray-300 px-4 py-2">Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td class="border border-gray-300 px-4 py-2">@user.UserName</td>
+                <td class="border border-gray-300 px-4 py-2">@user.Email</td>
+                <td class="border border-gray-300 px-4 py-2">@string.Join(", ", user.Roles)</td>
+                <td class="border border-gray-300 px-4 py-2">
+                    @if (user.IsLocked)
+                    {
+                        <span class="text-red-600 font-bold">Đã khóa</span>
+                        @if (user.LockoutEnd.HasValue)
+                        {
+                            <br>
+                
+                            <small>Khóa đến: @user.LockoutEnd.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-green-600 font-bold">Đang hoạt động</span>
+                    }
+                </td>
+                <td class="border border-gray-300 px-4 py-2">
+                    <div class="flex flex-wrap gap-1">
+                        @if (user.Id != currentUserId)
+                        {
+                            <form action="/Admin/Users/Edit/@user.Id" method="get">
+                                <button type="submit"
+                                        class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold px-2 py-1 rounded">
+                                    Sửa
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-gray-500 italic text-sm px-2 py-1 border border-gray-300 rounded">Đang dùng</span>
+                        }
+
+                        @if (user.IsLocked)
+                        {
+                            <form action="/Admin/Users/UnlockUser/@user.Id" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="bg-green-500 hover:bg-green-700 text-white text-sm font-semibold px-2 py-1 rounded"
+                                        onclick="return confirm('Bạn có chắc chắn muốn mở khóa tài khoản @user.UserName?')">
+                                    Mở khóa
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            @if (user.Id != currentUserId)
+                            {
+                                <form action="/Admin/Users/LockUser/@user.Id" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white text-sm font-semibold px-2 py-1 rounded"
+                                            onclick="return confirm('Bạn có chắc chắn muốn khóa tài khoản @user.UserName?')">
+                                        Khóa
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-gray-500 italic text-sm px-2 py-1 border border-gray-300 rounded">Không thể tự khóa</span>
+                            }
+                        }
+                    </div>
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+
+@* Debug script *@
+<script>
+    console.log('View loaded successfully');
+    console.log('Model data:', @Html.Raw(Json.Serialize(Model)));
+</script>

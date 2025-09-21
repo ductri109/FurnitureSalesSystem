@@ -1,0 +1,110 @@
+﻿@model FurnitureSalesSystem.Models.Product
+
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+}
+
+<div class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl fade-in">
+        <div class="flex justify-between items-center border-b px-6 py-4">
+            <div>
+                <h3 class="text-xl font-semibold text-gray-800">Thêm Sản Phẩm Mới</h3>
+                <p class="text-sm text-gray-500">Điền thông tin chi tiết cho sản phẩm của bạn</p>
+            </div>
+            <a asp-action="Index" class="text-indigo-600 hover:text-indigo-800 transition-colors flex items-center space-x-2">
+                <i class="fas fa-arrow-left"></i>
+                <span>Quay lại</span>
+            </a>
+        </div>
+
+        <div class="p-6">
+            <form asp-action="Create" method="post" enctype="multipart/form-data" class="space-y-6" id="addProductForm">
+                <div asp-validation-summary="ModelOnly" class="text-red-600"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label asp-for="Name" class="block text-gray-700 font-medium">Tên sản phẩm</label>
+                        <input asp-for="Name" class="w-full border rounded px-4 py-2" />
+                        <span asp-validation-for="Name" class="text-red-600 text-sm"></span>
+                    </div>
+                    <div>
+                        <label asp-for="CategoryId" class="block text-gray-700 font-medium">Danh mục</label>
+                        <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" class="w-full border rounded px-4 py-2"></select>
+                        <span asp-validation-for="CategoryId" class="text-red-600 text-sm"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Price" class="block text-gray-700 font-medium">Giá</label>
+                        <input asp-for="Price" class="w-full border rounded px-4 py-2" />
+                        <span asp-validation-for="Price" class="text-red-600 text-sm"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Quantity" class="block text-gray-700 font-medium">Số lượng</label>
+                        <input asp-for="Quantity" class="w-full border rounded px-4 py-2" />
+                        <span asp-validation-for="Quantity" class="text-red-600 text-sm"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium">Mô tả chi tiết</label>
+                    <div id="quill-container" class="bg-white border rounded"></div>
+                    <input asp-for="Description" type="hidden" id="Description" />
+                    <span asp-validation-for="Description" class="text-red-600 text-sm"></span>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium">Ảnh sản phẩm</label>
+                    <div id="drop-zone" class="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer">
+                        <div class="flex flex-col items-center justify-center">                          
+                            <div id="drop-preview">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-500">Kéo & thả ảnh vào đây hoặc nhấn để chọn</p>
+                                <input name="ImageFile" id="ImageFile" type="file" accept="image/*" class="hidden" />
+                            </div>
+                            <span asp-validation-for="ImageFile" class="text-red-600 text-sm"></span>
+                        </div> 
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <button type="submit" class="bg-[var(--primary-color)] text-white px-6 py-2 rounded hover:bg-[var(--secondary-color)]">Lưu</button>
+                    <a asp-action="Index" class="px-6 py-2 border rounded hover:bg-gray-100">Quay lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+        const quill = new Quill('#quill-container', {
+            theme: 'snow',
+            modules: { toolbar: true }
+        });
+
+        const form = document.getElementById('addProductForm');
+        form.addEventListener('submit', function () {
+            document.getElementById('Description').value = quill.root.innerHTML;
+        });
+
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('ImageFile');
+        const dropPreview = document.getElementById('drop-preview');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const previewImg = `<img src="${e.target.result}" class="w-48 h-32 object-cover rounded mx-auto" />`;
+                    const inputHtml = dropPreview.querySelector('#ImageFile'); // giữ lại input
+                    dropPreview.innerHTML = previewImg;
+                    dropPreview.appendChild(inputHtml); // gắn lại input
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

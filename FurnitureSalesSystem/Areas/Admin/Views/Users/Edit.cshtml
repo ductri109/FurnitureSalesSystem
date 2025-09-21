@@ -1,0 +1,62 @@
+﻿@model FurnitureSalesSystem.Models.ViewModels.UserCreateEditViewModel
+@{
+    ViewData["Title"] = "Chỉnh sửa người dùng";
+    var roles = ViewBag.AllRoles as List<string>;
+}
+<h2 class="text-2xl font-bold mb-6">Chỉnh sửa người dùng</h2>
+
+<form action="/Admin/Users/Edit" method="post" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="Id" value="@Model.Id" />
+
+    <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-1">Mã người dùng</label>
+        <input value="@Model.Id" disabled class="bg-gray-100 text-gray-700 border border-gray-300 rounded w-full py-2 px-3" />
+    </div>
+
+    <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-1">Tên đăng nhập</label>
+        <input name="UserName" value="@Model.UserName" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+        <span asp-validation-for="UserName" class="text-red-500 text-xs italic"></span>
+    </div>
+
+    <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-1">Email</label>
+        <input name="Email" type="email" value="@Model.Email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+        <span asp-validation-for="Email" class="text-red-500 text-xs italic"></span>
+    </div>
+
+    <div class="mb-4">
+        <label asp-for="Password" class="block text-gray-700 text-sm font-bold mb-1">Mật khẩu mới <span class="text-sm text-gray-500">(bỏ trống nếu không thay đổi)</span></label>
+        <input asp-for="Password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="••••••••" />
+        <span asp-validation-for="Password" class="text-red-500 text-xs italic"></span>
+    </div>
+
+    <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2">Phân quyền</label>
+        <div class="grid grid-cols-2 gap-2">
+            @foreach (var role in roles ?? new List<string>())
+            {
+                <label class="flex items-center space-x-2 text-sm">
+                    <input type="checkbox" name="Roles" value="@role"
+                           class="form-checkbox text-blue-500"
+                           @(Model.Roles.Contains(role) ? "checked" : "") />
+                    <span>@role</span>
+                </label>
+            }
+        </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-6">
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            💾 Lưu thay đổi
+        </button>
+        <a href="/Admin/Users/Index" class="text-gray-600 hover:underline text-sm">
+            ← Quay lại danh sách
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

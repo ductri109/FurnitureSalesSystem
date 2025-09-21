@@ -1,0 +1,48 @@
+﻿@model List<FurnitureSalesSystem.Models.ViewModels.CategoryWithProductsViewModel>
+
+@{
+    ViewData["Title"] = "Sản phẩm theo loại";
+}
+
+<div class="p-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">Danh sách sản phẩm theo loại</h1>
+
+    @foreach (var cat in Model)
+    {
+        <div class="mb-8 border border-gray-200 rounded shadow-sm">
+            <div class="bg-gray-100 px-4 py-2 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-gray-700">@cat.CategoryName</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-gray-700">
+                    <thead class="bg-white border-b font-semibold">
+                        <tr>
+                            <th class="text-left px-4 py-2">Tên sản phẩm</th>
+                            <th class="text-left px-4 py-2">Giá</th>
+                            <th class="text-left px-4 py-2">Số lượng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (cat.Products.Any())
+                        {
+                            @foreach (var p in cat.Products)
+                            {
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="px-4 py-2">@p.Name</td>
+                                    <td class="px-4 py-2">@String.Format("{0:N0} ₫", p.Price)</td>
+                                    <td class="px-4 py-2">@p.Quantity</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="px-4 py-2 text-gray-500 italic">Không có sản phẩm nào</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
