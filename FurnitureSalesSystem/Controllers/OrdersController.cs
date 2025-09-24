@@ -10,7 +10,6 @@ using X.PagedList;
 
 namespace FurnitureSalesSystem.Controllers
 {
-    [Authorize(Roles = "Giám đốc, Nhân viên bán hàng")]
     public class OrdersController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -23,6 +22,7 @@ namespace FurnitureSalesSystem.Controllers
         }
 
         // GET: Orders/Create
+        [Authorize(Roles = "Nhân viên bán hàng")]
         public async Task<IActionResult> Create()
         {
             var customers = await _context.Customers.ToListAsync();
@@ -48,6 +48,7 @@ namespace FurnitureSalesSystem.Controllers
         // POST: Orders/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nhân viên bán hàng")]
         public async Task<IActionResult> Create(OrderCreateViewModel vm)
         {
             var userId = _userManager.GetUserId(User);
@@ -111,6 +112,7 @@ namespace FurnitureSalesSystem.Controllers
             return RedirectToAction("Index", "Orders");
         }
 
+        [Authorize(Roles = "Giám đốc, Nhân viên bán hàng")]
         public async Task<IActionResult> Index(int? page)
         {
             int pageSize = 5;
@@ -130,6 +132,7 @@ namespace FurnitureSalesSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nhân viên bán hàng")]
         public async Task<IActionResult> Delete(int id)
         {
             var order = await _context.Orders
@@ -153,6 +156,8 @@ namespace FurnitureSalesSystem.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        [Authorize(Roles = "Giám đốc, Nhân viên bán hàng")]
         public async Task<IActionResult> Details(int id)
         {
             var order = await _context.Orders
@@ -165,6 +170,7 @@ namespace FurnitureSalesSystem.Controllers
             return View(order);
         }
 
+        [Authorize(Roles = "Nhân viên bán hàng")]
         public IActionResult Edit(int id)
         {
             var order = _context.Orders
@@ -205,6 +211,7 @@ namespace FurnitureSalesSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nhân viên bán hàng")]
         public async Task<IActionResult> Edit(int id, OrderCreateViewModel vm)
         {
             var order = await _context.Orders
@@ -279,7 +286,7 @@ namespace FurnitureSalesSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
+        [Authorize(Roles = "Giám đốc, Nhân viên bán hàng")]
         public async Task<IActionResult> LoadProductsPartial(int? page)
         {
             int pageSize = 8;

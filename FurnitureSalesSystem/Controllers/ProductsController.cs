@@ -11,7 +11,6 @@ using X.PagedList;
 
 namespace FurnitureSalesSystem.Controllers
 {
-    [Authorize(Roles = "Giám đốc, Nhân viên kho")]
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -22,6 +21,7 @@ namespace FurnitureSalesSystem.Controllers
         }
 
         // GET: Products
+        [Authorize(Roles = "Giám đốc, Nhân viên kho, Nhân viên bán hàng")]
         public async Task<IActionResult> Index(int? page)
         {
             int pageNumber = page ?? 1;
@@ -45,6 +45,7 @@ namespace FurnitureSalesSystem.Controllers
 
 
         // GET: Products/Details/5
+        [Authorize(Roles = "Giám đốc, Nhân viên kho, Nhân viên bán hàng")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -58,6 +59,7 @@ namespace FurnitureSalesSystem.Controllers
         }
 
         // GET: Products/Create
+        [Authorize(Roles = "Nhân viên kho")]
         public IActionResult Create()
         {
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
@@ -66,6 +68,7 @@ namespace FurnitureSalesSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nhân viên kho")]
         public async Task<IActionResult> Create(Product product, IFormFile? ImageFile)
         {
             // ✅ TEST xem có nhận ảnh không
@@ -98,6 +101,7 @@ namespace FurnitureSalesSystem.Controllers
             return View(product);
         }
         // GET: Products/Edit/5
+        [Authorize(Roles = "Nhân viên kho")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -111,6 +115,7 @@ namespace FurnitureSalesSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nhân viên kho")]
         public async Task<IActionResult> Edit(int id, Product product, IFormFile? ImageFile)
         {
             if (id != product.Id)
@@ -167,6 +172,7 @@ namespace FurnitureSalesSystem.Controllers
 
 
         // GET: Products/Delete/5
+        [Authorize(Roles = "Nhân viên kho")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -182,6 +188,7 @@ namespace FurnitureSalesSystem.Controllers
         // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nhân viên kho")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Products.FindAsync(id);
@@ -197,6 +204,7 @@ namespace FurnitureSalesSystem.Controllers
 
 
         // GET: Products/Overview
+        [Authorize(Roles = "Giám đốc, Nhân viên kho, Nhân viên bán hàng")]
         public async Task<IActionResult> Overview()
         {
             var categories = await _context.Categories
