@@ -7,7 +7,7 @@ using System.Data;
 
 namespace FurnitureSalesSystem.Areas.Admin.Controllers
 {
-    [Authorize(Roles = "Giám đốc, Quản trị viên")]
+    [Authorize(Roles = "Giám đốc")]
     [Area("Admin")]
     public class UsersController : Controller
     {
