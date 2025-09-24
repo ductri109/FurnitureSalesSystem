@@ -25,7 +25,7 @@ namespace FurnitureSalesSystem.Data
             }
 
             // 3. Tạo lại role
-            string[] roles = { "Giám đốc", "Quản trị viên", "Nhân viên kho", "Nhân viên bán hàng" };
+            string[] roles = { "Giám đốc", "Nhân viên kho", "Nhân viên bán hàng" };
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
@@ -46,24 +46,12 @@ namespace FurnitureSalesSystem.Data
             await userManager.CreateAsync(adminUser, "GiamDoc123@");
             await userManager.AddToRoleAsync(adminUser, "Giám đốc");
 
-            // 5. Tạo manager (Quản trị viên)
-            var managerEmail = "manager@amlive.com";
-            var managerUser = new IdentityUser
-            {
-                UserName = "quanly",
-                Email = managerEmail,
-                EmailConfirmed = true,
-                LockoutEnabled = true,
-            };
-            await userManager.CreateAsync(managerUser, "QuanLy123@");
-            await userManager.AddToRoleAsync(managerUser, "Quản trị viên");
-
             // 6. Tạo warehouse (Nhân viên kho)
             var warehouseEmail = "warehouse@amlive.com";
             var warehouseUser = new IdentityUser
             {
                 UserName = "kho",
-                Email = managerEmail,
+                Email = warehouseEmail,
                 EmailConfirmed = true,
                 LockoutEnabled = true,
             };
@@ -75,7 +63,7 @@ namespace FurnitureSalesSystem.Data
             var sellUser = new IdentityUser
             {
                 UserName = "banhang",
-                Email = managerEmail,
+                Email = sellEmail,
                 EmailConfirmed = true,
                 LockoutEnabled = true,
             };

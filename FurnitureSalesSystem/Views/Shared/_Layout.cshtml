@@ -199,7 +199,7 @@
                     </a>
                 }
 
-                @if (User.IsInRole("Giám đốc") || User.IsInRole("Quản trị viên"))
+                @if (User.IsInRole("Giám đốc"))
                 {
                     <a asp-area="Admin" asp-controller="Users" asp-action="Index"
                        class="nav-link @(controller == "Users" ? "active" : "")">
