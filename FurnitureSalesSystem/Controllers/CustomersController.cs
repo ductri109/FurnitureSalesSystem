@@ -6,7 +6,6 @@ using System.Data;
 
 namespace FurnitureSalesSystem.Controllers
 {
-    [Authorize(Roles = "Giám đốc, Nhân viên bán hàng")]
     public class CustomersController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -16,7 +15,7 @@ namespace FurnitureSalesSystem.Controllers
         {
             _context = context;
         }
-
+        [Authorize(Roles = "Giám đốc, Nhân viên bán hàng")]
         public async Task<IActionResult> Index(int page = 1)
         {
             var totalCustomers = await _context.Customers.CountAsync();

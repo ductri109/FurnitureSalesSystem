@@ -11,9 +11,12 @@
 <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
     <div class="p-4 border-b flex justify-between items-center">
         <h3 class="font-semibold">Danh sách đơn hàng</h3>
-        <a asp-action="Create" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--secondary-color)] transition mb-4 inline-block">
-            <i class="fas fa-plus mr-2"></i> Tạo đơn hàng
-        </a>
+        @if (User.IsInRole("Nhân viên bán hàng"))
+        {
+            <a asp-action="Create" class="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--secondary-color)] transition mb-4 inline-block">
+                <i class="fas fa-plus mr-2"></i> Tạo đơn hàng
+            </a>
+        }
     </div>
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -49,15 +52,21 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 flex gap-2">
+                            @if (User.IsInRole("Nhân viên bán hàng"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@order.Id" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            }
                             <a asp-action="Details" asp-route-id="@order.Id" class="text-[var(--primary)] hover:text-[var(--secondary)]">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a asp-action="Edit" asp-route-id="@order.Id" class="text-blue-600 hover:text-blue-800">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button onclick="confirmDelete(@order.Id)" class="text-red-600 hover:text-red-800">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            @if (User.IsInRole("Nhân viên bán hàng"))
+                            {
+                                <button onclick="confirmDelete(@order.Id)" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            }
                         </td>
                     </tr>
                 }

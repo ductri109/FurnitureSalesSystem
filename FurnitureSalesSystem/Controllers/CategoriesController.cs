@@ -14,7 +14,6 @@ using X.PagedList;
 
 namespace FurnitureSalesSystem.Controllers
 {
-    [Authorize(Roles = "Giám đốc, Nhân viên kho")]
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -23,29 +22,8 @@ namespace FurnitureSalesSystem.Controllers
         {
             _context = context;
         }
-
-        // GET: Categories
-        public async Task<IActionResult> Index(int? page)
-        {
-            int pageNumber = page ?? 1;
-            int pageSize = 5;
-
-            var categories = await _context.Categories
-                .Include(c => c.Products)
-                .OrderBy(c => c.Name)
-                .Select(c => new CategoryWithTotalQuantityViewModel
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    TotalProducts = c.Products.Sum(p => p.Quantity)
-                })
-                .ToPagedListAsync(pageNumber, pageSize);
-
-            return View(categories);
-        }
-
-
         // GET: Categories/Details/5
+        [Authorize(Roles = "Giám đốc, Nhân viên kho, Nhân viên bán hàng")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -64,6 +42,7 @@ namespace FurnitureSalesSystem.Controllers
         }
 
         // GET: Categories/Create
+        [Authorize(Roles = "Nhân viên kho")]
         public IActionResult Create()
         {
             return View();
@@ -74,6 +53,7 @@ namespace FurnitureSalesSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nhân viên kho")]
         public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
         {
             if (ModelState.IsValid)
@@ -86,6 +66,7 @@ namespace FurnitureSalesSystem.Controllers
         }
 
         // GET: Categories/Edit/5
+        [Authorize(Roles = "Nhân viên kho")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -106,6 +87,7 @@ namespace FurnitureSalesSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nhân viên kho")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
         {
             if (id != category.Id)
@@ -137,6 +119,7 @@ namespace FurnitureSalesSystem.Controllers
         }
 
         // GET: Categories/Delete/5
+        [Authorize(Roles = "Nhân viên kho")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -157,6 +140,7 @@ namespace FurnitureSalesSystem.Controllers
         // POST: Categories/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nhân viên kho")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var category = await _context.Categories.FindAsync(id);
