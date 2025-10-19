@@ -51,26 +51,46 @@
                                 @order.Status
                             </span>
                         </td>
-                        <td class="px-6 py-4 flex gap-2">
+                        <td class="px-6 py-4 flex gap-3">
+                            <a asp-action="Details" asp-route-id="@order.Id" class="text-[var(--primary)] hover:text-[var(--secondary)]">
+                                <i class="fas fa-eye"></i>
+                            </a>
+
                             @if (User.IsInRole("Nhân viên bán hàng"))
                             {
                                 <a asp-action="Edit" asp-route-id="@order.Id" class="text-blue-600 hover:text-blue-800">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                            }
-                            <a asp-action="Details" asp-route-id="@order.Id" class="text-[var(--primary)] hover:text-[var(--secondary)]">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            @if (User.IsInRole("Nhân viên bán hàng"))
-                            {
-                                <button onclick="confirmDelete(@order.Id)" class="text-red-600 hover:text-red-800">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+
+                                @* ❌ Bỏ nút xóa đơn hàng *@
+                                @* ✅ Thêm nút hủy đơn popup *@
+                                @if (order.Status != OrderStatus.Cancelled)
+                                {
+                                    <button onclick="openCancelPopup(@order.Id)" class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-ban mr-1"></i>Hủy
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-500 italic">Đã hủy</span>
+                                }
                             }
                         </td>
                     </tr>
                 }
             </tbody>
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
         </table>
     </div>
 
@@ -90,31 +110,76 @@
     </div>
 </div>
 
-<!-- Popup xác nhận xoá -->
-<div id="deleteModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-40 flex justify-center items-center">
-    <div class="bg-white rounded-lg shadow p-6 w-80">
-        <h2 class="text-lg font-semibold mb-4">Xác nhận xoá</h2>
-        <p>Bạn có chắc muốn xoá đơn hàng này?</p>
-        <div class="flex justify-end mt-4 gap-2">
-            <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Huỷ</button>
-            <form id="deleteForm" method="post" asp-action="Delete">
-                <input type="hidden" name="id" id="delete-id" />
-                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Xoá</button>
-            </form>
-        </div>
+<!-- ✅ Popup Hủy đơn hàng -->
+<div id="cancelModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-40 flex justify-center items-center">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-[400px]">
+        <h2 class="text-xl font-semibold text-red-600 mb-3">Hủy đơn hàng</h2>
+        <p id="cancelOrderId" class="text-gray-700 mb-4"></p>
+
+        <form id="cancelForm" method="post" asp-action="CancelConfirmed">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="cancel-id" />
+
+            <div class="space-y-2 text-sm">
+                <label class="flex items-center">
+                    <input type="radio" name="cancelReason" value="Khách hàng yêu cầu hủy trực tiếp với shop." class="mr-2" required>
+                    Khách hàng yêu cầu hủy trực tiếp với shop.
+                </label>
+                <label class="flex items-center">
+                    <input type="radio" name="cancelReason" value="Sự cố kỹ thuật hoặc nhầm lẫn trong xử lý đơn hàng." class="mr-2">
+                    Sự cố kỹ thuật hoặc nhầm lẫn trong xử lý đơn hàng.
+                </label>
+                <label class="flex items-center">
+                    <input type="radio" id="reason-other" name="cancelReason" value="Khác" class="mr-2">
+                    Khác
+                </label>
+            </div>
+
+            <div id="customReasonContainer" class="mt-3 hidden">
+                <textarea name="customReason" rows="3"
+                          class="w-full border rounded-lg p-2 text-sm focus:ring focus:ring-red-300"
+                          placeholder="Nhập lý do khác (tùy chọn)..."></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-5">
+                <button type="button" onclick="closeCancelPopup()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
+                    Đóng
+                </button>
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                    Xác nhận hủy
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        function confirmDelete(id) {
-            document.getElementById("delete-id").value = id;
-            document.getElementById("deleteModal").classList.remove("hidden");
+        // Mở popup hủy
+        function openCancelPopup(id) {
+            document.getElementById("cancel-id").value = id;
+            document.getElementById("cancelOrderId").innerText = "Bạn có chắc muốn hủy đơn hàng #" + id + " ?";
+            document.getElementById("cancelModal").classList.remove("hidden");
         }
 
-        function closeModal() {
-            document.getElementById("deleteModal").classList.add("hidden");
+        // Đóng popup hủy
+        function closeCancelPopup() {
+            document.getElementById("cancelModal").classList.add("hidden");
+            document.querySelectorAll('input[name="cancelReason"]').forEach(el => el.checked = false);
+            document.getElementById("customReasonContainer").classList.add("hidden");
         }
+
+        // Hiện ô nhập lý do khác
+        document.querySelectorAll('input[name="cancelReason"]').forEach(el => {
+            el.addEventListener('change', e => {
+                const otherBox = document.getElementById('customReasonContainer');
+                if (e.target.value === 'Khác') {
+                    otherBox.classList.remove('hidden');
+                } else {
+                    otherBox.classList.add('hidden');
+                }
+            });
+        });
     </script>
 }
 
