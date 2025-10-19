@@ -27,8 +27,8 @@ namespace FurnitureSalesSystem.Controllers
         {
             var customers = await _context.Customers.ToListAsync();
             var products = await _context.Products
-                                         .Where(p => p.Status && p.Quantity > 0)
-                                         .ToListAsync();
+                .Where(p => p.Status) // bỏ điều kiện Quantity > 0
+                .ToListAsync();
 
             ViewBag.CustomerList = new SelectList(customers, "Id", "FullName");
             ViewBag.Products = products;
@@ -55,22 +55,14 @@ namespace FurnitureSalesSystem.Controllers
             if (string.IsNullOrEmpty(userId) || !_context.Users.Any(u => u.Id == userId))
             {
                 ModelState.AddModelError("", "Tài khoản hiện tại không hợp lệ hoặc đã bị xóa.");
-                vm.Customers = await _context.Customers.ToListAsync();
-                vm.Products = await _context.Products
-                                            .Where(p => p.Status && p.Quantity > 0)
-                                            .ToListAsync();
+                await LoadViewData(vm);
                 return View(vm);
             }
 
             if (!ModelState.IsValid || vm.Items == null || !vm.Items.Any())
             {
-                vm.Customers = await _context.Customers.ToListAsync();
-                vm.Products = await _context.Products
-                                            .Where(p => p.Status && p.Quantity > 0)
-                                            .ToListAsync();
-
                 ModelState.AddModelError("", "Vui lòng chọn ít nhất một sản phẩm.");
-                
+                await LoadViewData(vm);
                 return View(vm);
             }
 
@@ -82,17 +74,24 @@ namespace FurnitureSalesSystem.Controllers
                 Status = vm.Status,
                 InternalNote = vm.InternalNote,
                 CustomerNote = vm.CustomerNote,
-                TotalAmount = vm.Items.Sum(p => p.Quantity * p.UnitPrice),
+                TotalAmount = vm.Items.Sum(i => i.Quantity * i.UnitPrice),
                 OrderDetails = new List<OrderDetail>()
             };
 
             foreach (var item in vm.Items)
             {
                 var product = await _context.Products.FindAsync(item.ProductId);
-                if (product == null || product.Quantity < item.Quantity)
+                if (product == null)
                 {
-                    ModelState.AddModelError("", $"Sản phẩm '{product?.Name}' không đủ số lượng.");
+                    ModelState.AddModelError("", $"Sản phẩm có ID {item.ProductId} không tồn tại.");
+                    await LoadViewData(vm);
+                    return View(vm);
+                }
 
+                if (product.Quantity < item.Quantity)
+                {
+                    ModelState.AddModelError("", $"Sản phẩm '{product.Name}' chỉ còn {product.Quantity} sản phẩm trong kho.");
+                    await LoadViewData(vm);
                     return View(vm);
                 }
 
@@ -109,7 +108,23 @@ namespace FurnitureSalesSystem.Controllers
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Orders");
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ✅ Hàm riêng để nạp lại dữ liệu cho View khi có lỗi
+        private async Task LoadViewData(OrderCreateViewModel vm)
+        {
+            var customers = await _context.Customers.ToListAsync();
+            var products = await _context.Products
+                .Where(p => p.Status) // bỏ điều kiện Quantity > 0
+                .ToListAsync();
+
+            ViewBag.CustomerList = new SelectList(customers, "Id", "FullName", vm.CustomerId);
+            ViewBag.Products = products;
+            ViewBag.Customers = customers;
+
+            vm.Customers = customers;
+            vm.Products = products;
         }
 
         [Authorize(Roles = "Giám đốc, Nhân viên bán hàng")]
@@ -264,11 +279,18 @@ namespace FurnitureSalesSystem.Controllers
             foreach (var item in vm.Items)
             {
                 var product = await _context.Products.FindAsync(item.ProductId);
-                if (product == null || product.Quantity < item.Quantity)
+                if (product == null)
                 {
-                    ModelState.AddModelError("", $"Sản phẩm '{product?.Name}' không đủ số lượng.");
-                    return View("Create", vm);
+                    ModelState.AddModelError("", $"Sản phẩm có ID {item.ProductId} không tồn tại.");
+                    await LoadViewData(vm);
+                    return View(vm);
+                }
 
+                if (product.Quantity < item.Quantity)
+                {
+                    ModelState.AddModelError("", $"Sản phẩm '{product.Name}' chỉ còn {product.Quantity} sản phẩm trong kho.");
+                    await LoadViewData(vm);
+                    return View(vm);
                 }
 
                 product.Quantity -= item.Quantity;
@@ -293,10 +315,73 @@ namespace FurnitureSalesSystem.Controllers
             int pageNumber = page ?? 1;
             var products = await _context.Products
                 .Include(p => p.Category)
-                .Where(p => p.Status && p.Quantity > 0)
+                .Where(p => p.Status)
                 .ToPagedListAsync(pageNumber, pageSize);
 
             return PartialView("_ProductListPartial", products); // OK
         }
+
+        [Authorize(Roles = "Nhân viên bán hàng, Giám đốc")]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == id);
+            if (order == null) return NotFound();
+
+            if (order.Status == OrderStatus.Cancelled)
+                return Json(new { success = false, message = "Đơn hàng này đã bị hủy trước đó." });
+
+            return Json(new { success = true });
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nhân viên bán hàng, Giám đốc")]
+        public async Task<IActionResult> CancelConfirmed(int id, string cancelReason, string? customReason)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+                return NotFound();
+
+            if (order.Status == OrderStatus.Cancelled)
+            {
+                TempData["ErrorMessage"] = "Đơn hàng này đã bị hủy trước đó.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // ✅ Xử lý lý do hủy
+            if (cancelReason == "Khác")
+            {
+                cancelReason = !string.IsNullOrWhiteSpace(customReason)
+                    ? $"Khác - {customReason}"
+                    : "Khác";
+            }
+
+            // ✅ Hoàn tác số lượng sản phẩm
+            foreach (var detail in order.OrderDetails)
+            {
+                var product = await _context.Products.FindAsync(detail.ProductId);
+                if (product != null)
+                {
+                    product.Quantity += detail.Quantity;
+                }
+            }
+
+            // ✅ Cập nhật thông tin đơn hàng
+            order.Status = OrderStatus.Cancelled;
+            order.CancelReason = cancelReason;
+            order.CancelledAt = DateTime.Now;
+            order.CancelledBy = User.Identity?.Name ?? "Không xác định";
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Đơn hàng #{order.Id} đã được hủy thành công.";
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

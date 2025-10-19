@@ -34,5 +34,11 @@ namespace FurnitureSalesSystem.Models
         public decimal TotalAmount { get; set; }
 
         public ICollection<OrderDetail>? OrderDetails { get; set; }
+
+        public string? CancelReason { get; set; }     // Lý do chính
+        public DateTime? CancelledAt { get; set; }    // Thời điểm hủy
+        public string? CancelledBy { get; set; }      // Người hủy
+
+
     }
 }
