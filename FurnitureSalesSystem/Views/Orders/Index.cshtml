@@ -7,6 +7,27 @@
 }
 
 <h1 class="text-2xl font-semibold text-gray-800 mb-6">Danh sách đơn hàng</h1>
+<form method="get" class="flex gap-4 mb-4">
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Trạng thái</label>
+        <select name="statusFilter" class="border rounded-md p-2">
+            <option value="">-- Tất cả --</option>
+            @foreach (var item in ViewBag.StatusList as List<SelectListItem>)
+            {
+                <option value="@item.Value" selected="@(item.Selected ? "selected" : null)">@item.Text</option>
+            }
+        </select>
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Tên khách hàng</label>
+        <input type="text" name="customerName" value="@ViewBag.CurrentCustomer" class="border rounded-md p-2" placeholder="Nhập tên khách hàng..." />
+    </div>
+
+    <div class="flex items-end">
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Lọc</button>
+    </div>
+</form>
 
 <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
     <div class="p-4 border-b flex justify-between items-center">
@@ -98,16 +119,51 @@
         <div class="text-sm text-gray-500">
             Trang @Model.PageNumber / @Model.PageCount
         </div>
+
         <div class="flex space-x-2">
-            @Html.PagedListPager(Model, page => Url.Action("Index", new { page }), new PagedListRenderOptions
+            @Html.PagedListPager(Model, page => Url.Action("Index", new {
+            page,
+            statusFilter = ViewBag.CurrentStatus,
+            customerName = ViewBag.CurrentCustomer
+                        }), new PagedListRenderOptions
             {
+              // Giao diện khung pagination
                 UlElementClasses = new[] { "flex", "space-x-1" },
-                        LiElementClasses = new[] { "mx-1" },
-                        PageClasses = new[] { "px-3", "py-1", "rounded", "border", "text-gray-600", "hover:bg-gray-100" },
-                        ActiveLiElementClass = "bg-gray-300 font-semibold"
-                        })
+                LiElementClasses = new[] { "flex" },
+
+                // Style cho từng nút
+                PageClasses = new[]
+                        {
+                        "flex", "items-center", "justify-center",
+                        "w-9", "h-9", "rounded-full",
+                        "border", "text-gray-700", "text-sm", "font-medium",
+                        "transition", "duration-200",
+                        "hover:bg-blue-600", "hover:text-white", "hover:border-blue-600"
+                        },
+
+                ActiveLiElementClass = "bg-blue-600 text-white font-semibold border-blue-600 rounded-full",
+
+                // Cấu hình hiển thị
+                DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                DisplayEllipsesWhenNotShowingAllPageNumbers = true,
+                EllipsesFormat = "…",
+                MaximumPageNumbersToDisplay = 5,
+
+                // Ký hiệu nút
+                LinkToFirstPageFormat = "«",
+                LinkToPreviousPageFormat = "‹",
+                LinkToNextPageFormat = "›",
+                LinkToLastPageFormat = "»"
+            })
         </div>
     </div>
+
+
+
+
 </div>
 
 <!-- ✅ Popup Hủy đơn hàng -->
