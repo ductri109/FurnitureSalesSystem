@@ -85,22 +85,56 @@
                         }
                     </li>
 
-                    @for (int i = 1; i <= Model.PageCount; i++)
+                    @{
+                        int totalPages = Model.PageCount;
+                        int currentPage = Model.PageNumber;
+                        int maxDisplay = 5;
+                        int startPage = Math.Max(1, currentPage - maxDisplay / 2);
+                        int endPage = Math.Min(totalPages, startPage + maxDisplay - 1);
+
+                        if (endPage - startPage + 1 < maxDisplay)
+                        {
+                            startPage = Math.Max(1, endPage - maxDisplay + 1);
+                        }
+                    }
+
+                    @* Hiển thị trang đầu + dấu "..." nếu cần *@
+                    @if (startPage > 1)
                     {
                         <li>
-                            @if (i == Model.PageNumber)
+                            <a href="@Url.Action("Index", new { page = 1 })" class="px-4 py-2 hover:bg-gray-100">1</a>
+                        </li>
+                        @if (startPage > 2)
+                        {
+                            <li><span class="px-3 py-2 text-gray-400">...</span></li>
+                        }
+                    }
+
+                    @* Các trang trong phạm vi hiển thị *@
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li>
+                            @if (i == currentPage)
                             {
-                                <span class="px-4 py-2 font-semibold text-[var(--primary-color)] bg-gray-100">
-                                    @i
-                                </span>
+                                <span class="px-4 py-2 font-semibold text-[var(--primary-color)] bg-gray-100">@i</span>
                             }
                             else
                             {
                                 <a href="@Url.Action("Index", new { page = i })"
-                                   class="px-4 py-2 hover:bg-gray-100">
-                                    @i
-                                </a>
+                                   class="px-4 py-2 hover:bg-gray-100">@i</a>
                             }
+                        </li>
+                    }
+
+                    @* Hiển thị dấu "..." + trang cuối nếu cần *@
+                    @if (endPage < totalPages)
+                    {
+                        @if (endPage < totalPages - 1)
+                        {
+                            <li><span class="px-3 py-2 text-gray-400">...</span></li>
+                        }
+                        <li>
+                            <a href="@Url.Action("Index", new { page = totalPages })" class="px-4 py-2 hover:bg-gray-100">@totalPages</a>
                         </li>
                     }
 

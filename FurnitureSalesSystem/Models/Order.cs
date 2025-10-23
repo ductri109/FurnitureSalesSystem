@@ -33,7 +33,7 @@ namespace FurnitureSalesSystem.Models
         [Column(TypeName = "decimal(12,2)")]
         public decimal TotalAmount { get; set; }
 
-        public ICollection<OrderDetail>? OrderDetails { get; set; }
+        public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 
         public string? CancelReason { get; set; }     // Lý do chính
         public DateTime? CancelledAt { get; set; }    // Thời điểm hủy

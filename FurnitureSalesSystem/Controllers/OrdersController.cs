@@ -128,20 +128,47 @@ namespace FurnitureSalesSystem.Controllers
         }
 
         [Authorize(Roles = "Giám đốc, Nhân viên bán hàng")]
-        public async Task<IActionResult> Index(int? page)
+        public async Task<IActionResult> Index(string? statusFilter, string? customerName, int? page)
         {
-            int pageSize = 5;
+            int pageSize = 10;
             int pageNumber = page ?? 1;
 
-            var allOrders = await _context.Orders
+            var ordersQuery = _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.User)
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Product)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
+                .AsQueryable();
 
-            var pagedOrders = allOrders.ToPagedList(pageNumber, pageSize);
+            // 🔹 Lọc theo trạng thái
+            if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<OrderStatus>(statusFilter, out var parsedStatus))
+            {
+                ordersQuery = ordersQuery.Where(o => o.Status == parsedStatus);
+            }
+
+            // 🔹 Lọc theo tên khách hàng
+            if (!string.IsNullOrEmpty(customerName))
+            {
+                ordersQuery = ordersQuery.Where(o => o.Customer != null && o.Customer.FullName.Contains(customerName));
+            }
+
+            // ✅ Dùng ToPagedListAsync để tránh cảnh báo
+            var pagedOrders = await ordersQuery
+                .OrderByDescending(o => o.OrderDate)
+                .ToPagedListAsync(pageNumber, pageSize);
+
+            ViewBag.StatusList = Enum.GetValues(typeof(OrderStatus))
+                .Cast<OrderStatus>()
+                .Select(s => new SelectListItem
+                {
+                    Value = s.ToString(),
+                    Text = s.ToString(),
+                    Selected = (statusFilter == s.ToString())
+                }).ToList();
+
+            ViewBag.CurrentStatus = statusFilter;
+            ViewBag.CurrentCustomer = customerName;
+
             return View(pagedOrders);
         }
 

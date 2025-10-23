@@ -25,7 +25,7 @@ namespace FurnitureSalesSystem.Controllers
         public async Task<IActionResult> Index(int? page)
         {
             int pageNumber = page ?? 1;
-            int pageSize = 5;
+            int pageSize = 10;
 
             var products = await _context.Products
                 .Include(p => p.Category)
